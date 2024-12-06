@@ -1,4 +1,7 @@
-﻿namespace RequestProcessor.DataAccess.Models
+﻿using System.Text.Json.Serialization;
+using System.Text.Json;
+
+namespace RequestProcessor.DataAccess.Models
 {
     public class Order
     {
@@ -9,5 +12,6 @@
         public string Currency { get; set; }
         public string ClientIp { get; set; }
         public OrderStatus Status { get; set; }
+
     }
 }

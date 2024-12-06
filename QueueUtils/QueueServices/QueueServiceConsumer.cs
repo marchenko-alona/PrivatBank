@@ -7,7 +7,7 @@ namespace QueueUtils.QueueServices
 {
     public class QueueServiceConsumer : IQueueServiceConsumer
     {
-        public async Task StartListening(QueueSettings queueSettings, Func<QueueItem, string> handler, CancellationToken cancellationToken)
+        public async Task StartListening(QueueSettings queueSettings, Func<QueueItem, Task<string>> handler, CancellationToken cancellationToken)
         {
             var factory = new ConnectionFactory
             {
@@ -41,8 +41,8 @@ namespace QueueUtils.QueueServices
 
                 try
                 {
-                    var request = QueueItem.Deserialize(message);
-                    response = handler(request);
+                    var request = QueueItem.Deserialize<QueueItem>(message);
+                    response = await handler(request);
                 }
                 catch (Exception e)
                 {

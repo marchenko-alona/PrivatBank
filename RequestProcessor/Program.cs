@@ -1,5 +1,7 @@
 ﻿using QueueUtils.QueueServices;
 using QueueUtils.QueueServices.Configs;
+using RequestProcessor.DataAccess;
+using RequestProcessor.DataAccess.Repositories;
 using RequestProcessor.HostedServices;
 
 namespace RequestProcessor;
@@ -48,6 +50,8 @@ public class Program
                     }
                 });
 
+                services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+                services.AddScoped<IOrderService, OrderService>();
                 services.AddScoped<IQueueServiceConsumer, QueueServiceConsumer>();
                 services.AddHostedService<MessageHandlerHostedService>();
             });

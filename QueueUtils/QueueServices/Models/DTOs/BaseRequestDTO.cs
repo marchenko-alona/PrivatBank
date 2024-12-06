@@ -5,6 +5,7 @@ namespace QueueUtils.QueueServices.Models.DTOs
 {
     public abstract class BaseRequestDTO
     {
+        [JsonPropertyName("clientIp")]
         public string ClientIp { get; set; }
 
         internal static JsonSerializerOptions DefaultSerializerOptions { get; set; } = new()

@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using Npgsql;
+using QueueUtils.QueueServices.Models.DTOs;
 using RequestProcessor.DataAccess.Models;
 using System.Data;
 
@@ -7,28 +7,28 @@ namespace RequestProcessor.DataAccess.Repositories
 {
     public class OrderService(IDbConnectionFactory dbConnectionFactory) : IOrderService
     {
-        public async Task<int> InsertOrderAsync(string clientId, string departmentAddress, decimal amount, string currency, string clientIp = null, int status = 0)
+        public async Task<int> InsertOrderAsync(CreateOrderDto createOrderDto)
         {
             using (IDbConnection connection = dbConnectionFactory.GetConnection())
             {
                 connection.Open();
-                var parameters = new
-                {
-                    client_id = clientId,
-                    department_address = departmentAddress,
-                    amount = amount,
-                    currency = currency,
-                    client_ip = clientIp,
-                    status = status
-                };
+                var parameters = new DynamicParameters();
+                parameters.Add("request_id", 0, DbType.Int32, ParameterDirection.Output);
+                parameters.Add("client_id", createOrderDto.ClientId);
+                parameters.Add("department_address", createOrderDto.DepartmentAddress);
+                parameters.Add("amount", createOrderDto.Amount);
+                parameters.Add("currency", createOrderDto.Currency);
+                parameters.Add("client_ip", createOrderDto.ClientIp);
+                parameters.Add("status", OrderStatus.Created);
 
-                var result = await connection.ExecuteScalarAsync<int>(
+                var result = await connection.ExecuteAsync(
                             "insert_order",
                             parameters,
                             commandType: CommandType.StoredProcedure
                         );
 
-                return result;
+                var requestId = parameters.Get<int>("request_id");
+                return requestId;
             }
         }
 
@@ -40,15 +40,17 @@ namespace RequestProcessor.DataAccess.Repositories
 
                 var parameters = new
                 {
-                    client_id = clientId,
-                    department_address = departmentAddress
+                    client_id_param = clientId,
+                    department_address_param = departmentAddress
                 };
 
+                await connection.ExecuteAsync(
+                    "CALL get_orders(@client_id_param, @department_address_param)",
+                    commandType: CommandType.Text);
+
                 var orders = await connection.QueryAsync<Order>(
-                    "get_orders",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
-                );
+                    "FETCH ALL IN result_cursor",
+                    commandType: CommandType.Text);
 
                 return orders.ToList();
             }
@@ -59,14 +61,31 @@ namespace RequestProcessor.DataAccess.Repositories
             using (IDbConnection connection = dbConnectionFactory.GetConnection())
             {
                 connection.Open();
+                var parameters = new DynamicParameters();
+                parameters.Add("client_id", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("department_address", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("amount", dbType: DbType.Decimal, direction: ParameterDirection.Output);
+                parameters.Add("currency", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("status", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add("client_ip", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("order_id", orderId);
 
-                var parameters = new { order_id = orderId };
-
-                var order = await connection.QueryFirstOrDefaultAsync<Order>(
+                await connection.ExecuteAsync(
                     "get_order_by_id",
                     parameters,
                     commandType: CommandType.StoredProcedure
                 );
+
+                var order = new Order
+                {
+                    ClientId = parameters.Get<string>("client_id"),
+                    DepartmentAddress = parameters.Get<string>("department_address"),
+                    Amount = parameters.Get<decimal>("amount"),
+                    Currency = parameters.Get<string>("currency"),
+                    Status = (OrderStatus)parameters.Get<int>("status"),
+                    ClientIp = parameters.Get<string>("client_ip"),
+                    Id = orderId
+                };
 
                 return order;
             }

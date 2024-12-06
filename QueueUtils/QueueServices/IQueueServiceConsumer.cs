@@ -4,6 +4,6 @@ namespace QueueUtils.QueueServices
 {
     public interface IQueueServiceConsumer
     {
-        Task StartListening(QueueSettings queueSettings, Func<QueueItem, string> handler, CancellationToken cancellationToken);
+        Task StartListening(QueueSettings queueSettings, Func<QueueItem, Task<string>> handler, CancellationToken cancellationToken);
     }
 }

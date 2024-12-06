@@ -16,9 +16,9 @@ namespace QueueUtils.QueueServices.Models
             EventType = eventType;
         }
 
-        public static QueueItem Deserialize(string json)
+        public static T Deserialize<T>(string json)
         {
-            return JsonSerializer.Deserialize<QueueItem>(json, new JsonSerializerOptions
+            return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
