@@ -12,6 +12,5 @@ namespace RequestProcessor.DataAccess.Models
         public string Currency { get; set; }
         public string ClientIp { get; set; }
         public OrderStatus Status { get; set; }
-
     }
 }

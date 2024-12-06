@@ -34,45 +34,16 @@ namespace RequestProcessor.DataAccess.Repositories
 
         public async Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress)
         {
-            //using (IDbConnection connection = dbConnectionFactory.GetConnection())
-            //{
-            //    connection.Open();
-            //    NpgsqlTransaction tran = (NpgsqlTransaction)connection.BeginTransaction();
+            using (IDbConnection connection = dbConnectionFactory.GetConnection())
+            {
+                connection.Open();
 
-            //    NpgsqlCommand command = new NpgsqlCommand("select get_orders(@result_cursor)", (NpgsqlConnection?)connection);
-            //    command.CommandType = CommandType.Text;
-            //    NpgsqlParameter p = new NpgsqlParameter();
-            //    p.ParameterName = "@result_cursor";
-            //    p.NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Refcursor;
-            //    p.Direction = ParameterDirection.InputOutput;
-            //    p.Value = "result_cursor";
+                var query = @"SELECT * FROM get_orders(@ClientId, @DepartmentAddress)";
+                var parameters = new { ClientId = clientId, DepartmentAddress = departmentAddress };
+                var orders = await connection.QueryAsync<Order>(query, parameters);
 
-            //    var parameters = new
-            //    {
-            //        client_id_param = clientId,
-            //        department_address_param = departmentAddress
-            //    };
-
-            //    NpgsqlParameter p1 = new NpgsqlParameter();
-            //    p1.ParameterName = "@client_id_param";
-            //    p1.NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Varchar;
-            //    p1.Direction = ParameterDirection.Input;
-            //    p1.Value = clientId;
-
-            //    NpgsqlParameter p2 = new NpgsqlParameter();
-            //    p2.ParameterName = "@departmentAddress";
-            //    p2.NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Varchar;
-            //    p2.Direction = ParameterDirection.Input;
-            //    p2.Value = departmentAddress;
-
-            //    command.Parameters.Add(p1);
-            //    command.Parameters.Add(p2);
-            //    command.ExecuteNonQuery();
-
-            //    command.CommandText = "fetch all in \"ref\"";
-            //    command.CommandType = CommandType.Text;
-            return null;
-           // }
+                return orders.ToList();
+            }
         }
 
         public async Task<Order?> GetOrderByIdAsync(int orderId)

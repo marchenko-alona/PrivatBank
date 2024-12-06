@@ -51,18 +51,26 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE get_orders(
-    OUT result_cursor refcursor,
+CREATE OR REPLACE FUNCTION get_orders(
     client_id_param VARCHAR, 
     department_address_param VARCHAR
+)
+RETURNS TABLE (
+    Id INT,
+    Amount NUMERIC,
+    Currency VARCHAR,
+    Status INT,
+    ClientIp VARCHAR,
+    DepartmentAddress VARCHAR,
+    ClientId VARCHAR
 )
 LANGUAGE plpgsql
 AS
 $$
 BEGIN
-    OPEN result_cursor FOR
-    SELECT Id, Amount, Currency, Status, ClientIp, DepartmentAddress, ClientId
+    RETURN QUERY
+    SELECT Orders.Id, Orders.Amount, Orders.Currency, Orders.Status, Orders.ClientIp, Orders.DepartmentAddress, Orders.ClientId
     FROM Orders
-    WHERE ClientId = client_id_param AND DepartmentAddress = department_address_param;
+    WHERE Orders.ClientId = client_id_param AND Orders.DepartmentAddress = department_address_param;
 END;
 $$;
