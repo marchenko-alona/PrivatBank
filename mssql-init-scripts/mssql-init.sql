@@ -2,11 +2,8 @@ IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'PrivatBankDB')
 BEGIN
     CREATE DATABASE PrivatBankDB;
 END;
-
-GO
-
+PRINT '123';
 USE PrivatBankDB;
-GO
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Orders' AND xtype='U')
 BEGIN
@@ -17,46 +14,55 @@ BEGIN
         DepartmentAddress NVARCHAR(255) NOT NULL,
         Amount DECIMAL(18, 2) NOT NULL,
         Currency NVARCHAR(10) NOT NULL,
-        Status int DEFAULT 0 NOT NULL,
+        Status int DEFAULT 0 NOT NULL
     );
 END;
-GO
 
-CREATE PROCEDURE insert_order
-    @ClientId NVARCHAR(50),
-    @DepartmentAddress NVARCHAR(255),
-    @Amount DECIMAL(18, 2),
-    @Currency NVARCHAR(10),
-    @ClientIp NVARCHAR(255) = NULL, 
-    @RequestId INT OUTPUT
-AS
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'insert_order')
 BEGIN
-    INSERT INTO Orders(ClientId, DepartmentAddress, Amount, Currency, Status, ClientIp)
-    VALUES (@ClientId, @DepartmentAddress, @Amount, @Currency, 0, @ClientIp);
-    
-    SET @RequestId = SCOPE_IDENTITY(); 
+    EXEC('
+    CREATE PROCEDURE insert_order
+        @ClientId NVARCHAR(50),
+        @DepartmentAddress NVARCHAR(255),
+        @Amount DECIMAL(18, 2),
+        @Currency NVARCHAR(10),
+        @ClientIp NVARCHAR(255) = NULL, 
+        @RequestId INT OUTPUT
+    AS
+    BEGIN
+        INSERT INTO Orders(ClientId, DepartmentAddress, Amount, Currency, Status, ClientIp)
+        VALUES (@ClientId, @DepartmentAddress, @Amount, @Currency, 0, @ClientIp);
+        
+        SET @RequestId = SCOPE_IDENTITY(); 
+    END;
+    ');
 END;
 
-go
-
-CREATE PROCEDURE get_orders
-    @ClientId NVARCHAR(50),
-    @DepartmentAddress NVARCHAR(255)
-AS
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'get_orders')
 BEGIN
-    SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
-    FROM Orders
-    WHERE ClientId = @ClientId AND DepartmentAddress = @DepartmentAddress;
+    EXEC('
+    CREATE PROCEDURE get_orders
+        @ClientId NVARCHAR(50),
+        @DepartmentAddress NVARCHAR(255)
+    AS
+    BEGIN
+        SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
+        FROM Orders
+        WHERE ClientId = @ClientId AND DepartmentAddress = @DepartmentAddress;
+    END;
+    ');
 END;
 
-
-
-CREATE PROCEDURE get_order_by_id
-    OrderId INT
-AS
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'get_order_by_id')
 BEGIN
-    SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
-    FROM Orders
-    WHERE ClientId = @ClientId AND DepartmentAddress = @DepartmentAddress;
+    EXEC('
+    CREATE PROCEDURE get_order_by_id
+        @OrderId INT
+    AS
+    BEGIN
+        SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
+        FROM Orders
+        WHERE Id = @OrderId;
+    END;
+    ');
 END;
-

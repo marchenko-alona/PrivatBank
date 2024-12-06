@@ -27,9 +27,6 @@ BEGIN
 END;
 $$;
 
-
-
-
 CREATE OR REPLACE PROCEDURE get_order_by_id(
     OUT client_id VARCHAR, 
     OUT department_address VARCHAR, 
