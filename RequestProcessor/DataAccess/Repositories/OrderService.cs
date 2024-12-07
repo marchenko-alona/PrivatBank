@@ -52,19 +52,19 @@ namespace RequestProcessor.DataAccess.Repositories
             {
                 connection.Open();
                 var parameters = new DynamicParameters();
-                parameters.Add("client_id", dbType: DbType.String, direction: ParameterDirection.Output);
-                parameters.Add("department_address", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("client_id", dbType: DbType.String, direction: ParameterDirection.Output, size: 50);
+                parameters.Add("department_address", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
                 parameters.Add("amount", dbType: DbType.Decimal, direction: ParameterDirection.Output);
-                parameters.Add("currency", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("currency", dbType: DbType.String, direction: ParameterDirection.Output, size: 10);
                 parameters.Add("status", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                parameters.Add("client_ip", dbType: DbType.String, direction: ParameterDirection.Output);
+                parameters.Add("client_ip", dbType: DbType.String, direction: ParameterDirection.Output, size: 50);
                 parameters.Add("order_id", orderId);
 
                 await connection.ExecuteAsync(
-                    "get_order_by_id",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
-                );
+                        "get_order_by_id",
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
 
                 var order = new Order
                 {

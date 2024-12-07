@@ -27,18 +27,19 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''insert_
 BEGIN
     EXEC(''
     CREATE PROCEDURE insert_order
-        @ClientId NVARCHAR(50),
-        @DepartmentAddress NVARCHAR(255),
-        @Amount DECIMAL(18, 2),
-        @Currency NVARCHAR(10),
-        @ClientIp NVARCHAR(255) = NULL, 
-        @RequestId INT OUTPUT
+        @request_id INT OUTPUT, 
+        @client_id NVARCHAR(50), 
+        @department_address NVARCHAR(255), 
+        @amount DECIMAL(18, 2), 
+        @currency NVARCHAR(10),
+        @client_ip NVARCHAR(50) = NULL,
+        @status INT = 0
     AS
     BEGIN
-        INSERT INTO Orders(ClientId, DepartmentAddress, Amount, Currency, Status, ClientIp)
-        VALUES (@ClientId, @DepartmentAddress, @Amount, @Currency, 0, @ClientIp);
+       INSERT INTO Orders(ClientId, DepartmentAddress, Amount, Currency, Status, ClientIp)
+       VALUES (@client_id, @department_address, @amount, @currency, @status, @client_ip);
         
-        SET @RequestId = SCOPE_IDENTITY(); 
+        SET @request_id = SCOPE_IDENTITY(); 
     END;
     '');
 END;
@@ -47,13 +48,23 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''get_ord
 BEGIN
     EXEC(''
     CREATE PROCEDURE get_orders
-        @ClientId NVARCHAR(50),
-        @DepartmentAddress NVARCHAR(255)
+        @client_id_param NVARCHAR(50),
+        @department_address_param NVARCHAR(255),
+        @amount DECIMAL OUTPUT,
+        @currency NVARCHAR(10) OUTPUT,
+        @status INT OUTPUT,
+        @client_ip NVARCHAR(50) OUTPUT,
+        @department_address NVARCHAR(255) OUTPUT
     AS
     BEGIN
-        SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
+        SELECT 
+            @amount = Amount, 
+            @currency = Currency, 
+            @status = Status, 
+            @client_ip = ClientIp, 
+            @department_address = DepartmentAddress
         FROM Orders
-        WHERE ClientId = @ClientId AND DepartmentAddress = @DepartmentAddress;
+        WHERE ClientId = @client_id_param AND DepartmentAddress = @department_address_param;
     END;
     '');
 END;
@@ -62,13 +73,25 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''get_ord
 BEGIN
     EXEC(''
     CREATE PROCEDURE get_order_by_id
-        @OrderId INT
-    AS
-    BEGIN
-        SELECT Id, Amount, Currency, Status, ClientIp, ClientId, DepartmentAddress
-        FROM Orders
-        WHERE Id = @OrderId;
-    END;
+        @client_id NVARCHAR(50) OUTPUT, 
+        @department_address NVARCHAR(255) OUTPUT, 
+        @amount DECIMAL OUTPUT, 
+        @currency NVARCHAR(10) OUTPUT, 
+        @status INT OUTPUT, 
+        @client_ip NVARCHAR(50) OUTPUT,
+        @order_id INT
+        AS
+        BEGIN
+            SELECT 
+                @client_id = ClientId, 
+                @department_address = DepartmentAddress, 
+                @amount = Amount, 
+                @currency = Currency, 
+                @status = Status, 
+                @client_ip = ClientIp
+            FROM Orders
+            WHERE Id = @order_id;
+        END;
     '');
 END;
 ';
