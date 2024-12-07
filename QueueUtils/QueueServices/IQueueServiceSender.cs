@@ -1,5 +1,4 @@
 ﻿using QueueUtils.QueueServices.Models;
-using QueueUtils.QueueServices.Models.DTOs;
 
 namespace QueueUtils.QueueServices
 {

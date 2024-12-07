@@ -43,6 +43,12 @@ namespace PrivatBank.Controllers
         {
             var clientIp = GetClientIp();
 
+            if (requestId <= 0)
+            {
+                logger.LogWarning("Incorrect requestId: {requestId} for ClientIp {clientIp}", requestId, clientIp);
+                return BadRequest("Incorrect requestId. requestId has to be more then 0");
+            }
+
             var model = new GetOrderDTO()
             {
                 ClientIp = clientIp,
@@ -61,6 +67,12 @@ namespace PrivatBank.Controllers
         public async Task<IActionResult> GetStatusByClientAndAddressAsync([FromQuery] string clientId, [FromQuery] string departmentAddress, CancellationToken cancellationToken)
         {
             var clientIp = GetClientIp();
+
+            if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(departmentAddress))
+            {
+                logger.LogWarning("Incorrect request parameters: clientId {clientId} or departmentAddress {departmentAddress} for ClientIp {clientIp}", clientId, departmentAddress, clientIp);
+                return BadRequest("Incorrect parameters. Values can't be empty");
+            }
 
             var model = new GetOrdersDTO()
             {

@@ -20,7 +20,7 @@ public class LoggingMiddleware(RequestDelegate next, ILogger<LoggingMiddleware> 
             }
         }
 
-        var requestLog = $"Request: {request.Method} {request.Path} {request.QueryString} {clientIp} {bodyContent}";
+        var requestLog = $"Request: Method: {request.Method} Path: {request.Path} Query: {request.QueryString} ClientIp: {clientIp} Body: {bodyContent}";
 
         logger.LogInformation(requestLog);
         httpContext.Request.Body.Position = 0;
