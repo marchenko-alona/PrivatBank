@@ -5,8 +5,15 @@ using System.Data;
 
 namespace RequestProcessor.DataAccess.Repositories
 {
-    public class OrderService(IDbConnectionFactory dbConnectionFactory) : IOrderService
+    public abstract class BaseOrderRepository : IOrderRepository
     {
+        protected readonly IDbConnectionFactory dbConnectionFactory;
+
+        public BaseOrderRepository(IDbConnectionFactory dbConnectionFactory)
+        {
+            this.dbConnectionFactory = dbConnectionFactory;
+        }
+
         public async Task<int> InsertOrderAsync(CreateOrderDto createOrderDto)
         {
             using (IDbConnection connection = dbConnectionFactory.GetConnection())
@@ -32,20 +39,6 @@ namespace RequestProcessor.DataAccess.Repositories
             }
         }
 
-        public async Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress)
-        {
-            using (IDbConnection connection = dbConnectionFactory.GetConnection())
-            {
-                connection.Open();
-
-                var query = @"SELECT * FROM get_orders(@ClientId, @DepartmentAddress)";
-                var parameters = new { ClientId = clientId, DepartmentAddress = departmentAddress };
-                var orders = await connection.QueryAsync<Order>(query, parameters);
-
-                return orders.ToList();
-            }
-        }
-
         public async Task<Order?> GetOrderByIdAsync(int orderId)
         {
             using (IDbConnection connection = dbConnectionFactory.GetConnection())
@@ -66,6 +59,13 @@ namespace RequestProcessor.DataAccess.Repositories
                         commandType: CommandType.StoredProcedure
                     );
 
+
+                var value = parameters.Get<object>("client_id");
+                if (value == DBNull.Value)
+                {
+                    return null;
+                }
+
                 var order = new Order
                 {
                     ClientId = parameters.Get<string>("client_id"),
@@ -80,6 +80,8 @@ namespace RequestProcessor.DataAccess.Repositories
                 return order;
             }
         }
+
+        public abstract Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress);
     }
 }
 

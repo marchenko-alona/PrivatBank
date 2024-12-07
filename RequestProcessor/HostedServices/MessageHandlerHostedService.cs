@@ -1,14 +1,9 @@
-﻿
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
-using Npgsql;
+﻿using Microsoft.Extensions.Options;
 using QueueUtils.QueueServices;
-using QueueUtils.QueueServices.Configs;
 using QueueUtils.QueueServices.Models;
 using QueueUtils.QueueServices.Models.DTOs;
-using RequestProcessor.DataAccess;
+using RequestProcessor.DataAccess.Services;
 using System.ComponentModel;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
