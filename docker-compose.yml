@@ -1,6 +1,4 @@
 version: '3.4'
-volumes:
-  sqlserver_data1:
 
 services:
   privatbank:
@@ -59,25 +57,16 @@ services:
       - 1433:1433
     user: root
     volumes:
-      - sqlserver_data1:/var/opt/mssql
+      - ./mssql-init-scripts:/scripts
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${MSSQL_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${MSSQL_SA_PASSWORD} -Q 'SELECT 1' || exit 1"]
       interval: 10s
       retries: 10
-      start_period: 10s
-      timeout: 3s
-
-  sqlserver.configurator:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    user: root
-    volumes:
-      - ./mssql-init-scripts:/docker-entrypoint-initdb.d
-    depends_on:
-      mssql:
-       condition: service_healthy
-    command: >
-      bash -c 'echo "Start"/opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${MSSQL_SA_PASSWORD} -C -d master -i docker-entrypoint-initdb.d/init.sql;'
+      start_period: 30s
+      timeout: 5s
+    entrypoint: ["/bin/bash", "/usr/local/bin/entrypoint.sh"]
 
   RequestProcessor:
     image: ${DOCKER_REGISTRY-}requestprocessor

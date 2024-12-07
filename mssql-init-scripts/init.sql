@@ -4,9 +4,13 @@ BEGIN
 END;
 
 PRINT 'Checking if database exists...';
+
+DECLARE @sql NVARCHAR(MAX);
+
+SET @sql = N'
 USE PrivatBankDB;
 
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Orders' AND xtype='U')
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name = ''Orders'' AND xtype = ''U'')
 BEGIN
     CREATE TABLE Orders (
         Id INT IDENTITY PRIMARY KEY,
@@ -15,13 +19,13 @@ BEGIN
         DepartmentAddress NVARCHAR(255) NOT NULL,
         Amount DECIMAL(18, 2) NOT NULL,
         Currency NVARCHAR(10) NOT NULL,
-        Status int DEFAULT 0 NOT NULL
+        Status INT DEFAULT 0 NOT NULL
     );
 END;
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'insert_order')
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''insert_order'')
 BEGIN
-    EXEC('
+    EXEC(''
     CREATE PROCEDURE insert_order
         @ClientId NVARCHAR(50),
         @DepartmentAddress NVARCHAR(255),
@@ -36,12 +40,12 @@ BEGIN
         
         SET @RequestId = SCOPE_IDENTITY(); 
     END;
-    ');
+    '');
 END;
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'get_orders')
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''get_orders'')
 BEGIN
-    EXEC('
+    EXEC(''
     CREATE PROCEDURE get_orders
         @ClientId NVARCHAR(50),
         @DepartmentAddress NVARCHAR(255)
@@ -51,12 +55,12 @@ BEGIN
         FROM Orders
         WHERE ClientId = @ClientId AND DepartmentAddress = @DepartmentAddress;
     END;
-    ');
+    '');
 END;
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'get_order_by_id')
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''get_order_by_id'')
 BEGIN
-    EXEC('
+    EXEC(''
     CREATE PROCEDURE get_order_by_id
         @OrderId INT
     AS
@@ -65,5 +69,8 @@ BEGIN
         FROM Orders
         WHERE Id = @OrderId;
     END;
-    ');
+    '');
 END;
+';
+
+EXEC sp_executesql @sql;
