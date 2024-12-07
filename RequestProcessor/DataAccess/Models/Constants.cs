@@ -2,14 +2,16 @@
 {
     public class Constants
     {
-        public const string RequestIdParameter = "request_id";
-        public const string ClientIdParameter = "client_id";
-        public const string DepartmentAddressParameter = "department_address";
-        public const string AmountParameter = "amount";
-        public const string CurrencyParameter = "currency";
-        public const string ClientIpParameter = "client_ip";
-        public const string StatusParameter = "status";
-        public const string OrderIdParameter = "order_id";
+        public const string RequestId = "request_id";
+        public const string ClientId = "client_id";
+        public const string DepartmentAddress = "department_address";
+        public const string Amount = "amount";
+        public const string Currency = "currency";
+        public const string ClientIp = "client_ip";
+        public const string Status = "status";
+        public const string OrderId = "order_id";
+        public const string DepartmentAddressParam = "department_address_param";
+        public const string ClientIdParam = "client_id_param";
 
         // Stored procedure names
         public const string InsertOrderProcedure = "insert_order";

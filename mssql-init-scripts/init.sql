@@ -47,25 +47,21 @@ END;
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = ''P'' AND name = ''get_orders'')
 BEGIN
     EXEC(''
-    CREATE PROCEDURE get_orders
-        @client_id_param NVARCHAR(50),
-        @department_address_param NVARCHAR(255),
-        @amount DECIMAL OUTPUT,
-        @currency NVARCHAR(10) OUTPUT,
-        @status INT OUTPUT,
-        @client_ip NVARCHAR(50) OUTPUT,
-        @department_address NVARCHAR(255) OUTPUT
-    AS
-    BEGIN
-        SELECT 
-            @amount = Amount, 
-            @currency = Currency, 
-            @status = Status, 
-            @client_ip = ClientIp, 
-            @department_address = DepartmentAddress
-        FROM Orders
-        WHERE ClientId = @client_id_param AND DepartmentAddress = @department_address_param;
-    END;
+        CREATE PROCEDURE get_orders
+                @client_id_param NVARCHAR(50),
+                @department_address_param NVARCHAR(255)
+            AS
+            BEGIN
+                SELECT 
+                    Amount, 
+                    Currency, 
+                    Status, 
+                    ClientIp, 
+                    DepartmentAddress,
+                    ClientId
+                FROM Orders
+                WHERE ClientId = @client_id_param AND DepartmentAddress = @department_address_param;
+            END;
     '');
 END;
 

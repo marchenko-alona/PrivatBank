@@ -20,21 +20,21 @@ namespace RequestProcessor.DataAccess.Repositories
             {
                 connection.Open();
                 var parameters = new DynamicParameters();
-                parameters.Add("request_id", 0, DbType.Int32, ParameterDirection.Output);
-                parameters.Add("client_id", createOrderDto.ClientId);
-                parameters.Add("department_address", createOrderDto.DepartmentAddress);
-                parameters.Add("amount", createOrderDto.Amount);
-                parameters.Add("currency", createOrderDto.Currency);
-                parameters.Add("client_ip", createOrderDto.ClientIp);
-                parameters.Add("status", OrderStatus.Created);
+                parameters.Add(Constants.RequestId, 0, DbType.Int32, ParameterDirection.Output);
+                parameters.Add(Constants.ClientId, createOrderDto.ClientId);
+                parameters.Add(Constants.DepartmentAddress, createOrderDto.DepartmentAddress);
+                parameters.Add(Constants.Amount, createOrderDto.Amount);
+                parameters.Add(Constants.Currency, createOrderDto.Currency);
+                parameters.Add(Constants.ClientIp, createOrderDto.ClientIp);
+                parameters.Add(Constants.Status, OrderStatus.Created);
 
                 var result = await connection.ExecuteAsync(
-                            "insert_order",
+                            Constants.InsertOrderProcedure,
                             parameters,
                             commandType: CommandType.StoredProcedure
                         );
 
-                var requestId = parameters.Get<int>("request_id");
+                var requestId = parameters.Get<int>(Constants.RequestId);
                 return requestId;
             }
         }
@@ -45,35 +45,35 @@ namespace RequestProcessor.DataAccess.Repositories
             {
                 connection.Open();
                 var parameters = new DynamicParameters();
-                parameters.Add("client_id", dbType: DbType.String, direction: ParameterDirection.Output, size: 50);
-                parameters.Add("department_address", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
-                parameters.Add("amount", dbType: DbType.Decimal, direction: ParameterDirection.Output);
-                parameters.Add("currency", dbType: DbType.String, direction: ParameterDirection.Output, size: 10);
-                parameters.Add("status", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                parameters.Add("client_ip", dbType: DbType.String, direction: ParameterDirection.Output, size: 50);
-                parameters.Add("order_id", orderId);
+                parameters.Add(Constants.ClientId, dbType: DbType.String, direction: ParameterDirection.Output, size: Constants.ClientIdSize);
+                parameters.Add(Constants.DepartmentAddress, dbType: DbType.String, direction: ParameterDirection.Output, size: Constants.DepartmentAddressSize);
+                parameters.Add(Constants.Amount, dbType: DbType.Decimal, direction: ParameterDirection.Output);
+                parameters.Add(Constants.Currency, dbType: DbType.String, direction: ParameterDirection.Output, size: Constants.CurrencySize);
+                parameters.Add(Constants.Status, dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add(Constants.ClientIp, dbType: DbType.String, direction: ParameterDirection.Output, size: Constants.ClientIpSize);
+                parameters.Add(Constants.OrderId, orderId);
 
                 await connection.ExecuteAsync(
-                        "get_order_by_id",
+                        Constants.GetOrderByIdProcedure,
                         parameters,
                         commandType: CommandType.StoredProcedure
                     );
 
+                var value = parameters.Get<object>(Constants.ClientId);
 
-                var value = parameters.Get<object>("client_id");
-                if (value == DBNull.Value)
+                if (value == null)
                 {
                     return null;
                 }
 
                 var order = new Order
                 {
-                    ClientId = parameters.Get<string>("client_id"),
-                    DepartmentAddress = parameters.Get<string>("department_address"),
-                    Amount = parameters.Get<decimal>("amount"),
-                    Currency = parameters.Get<string>("currency"),
-                    Status = (OrderStatus)parameters.Get<int>("status"),
-                    ClientIp = parameters.Get<string>("client_ip"),
+                    ClientId = parameters.Get<string>(Constants.ClientId),
+                    DepartmentAddress = parameters.Get<string>(Constants.DepartmentAddress),
+                    Amount = parameters.Get<decimal>(Constants.Amount),
+                    Currency = parameters.Get<string>(Constants.Currency),
+                    Status = (OrderStatus)parameters.Get<int>(Constants.Status),
+                    ClientIp = parameters.Get<string>(Constants.ClientIp),
                     Id = orderId
                 };
 
@@ -84,4 +84,3 @@ namespace RequestProcessor.DataAccess.Repositories
         public abstract Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress);
     }
 }
-

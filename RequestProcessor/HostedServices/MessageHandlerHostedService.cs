@@ -11,6 +11,7 @@ namespace RequestProcessor.HostedServices
 {
     public class MessageHandlerHostedService : BackgroundService
     {
+        private readonly ILogger<MessageHandlerHostedService> _logger;
         private readonly QueueSettings _queueSettings;
         private readonly IQueueServiceConsumer _queueService;
         private readonly IOrderService _orderService;
@@ -27,18 +28,21 @@ namespace RequestProcessor.HostedServices
         public MessageHandlerHostedService(
             IOptions<QueueSettings> queueSettings,
             IQueueServiceConsumer queueService,
-            IOrderService orderService)
+            IOrderService orderService,
+            ILogger<MessageHandlerHostedService> logger)
         {
             _queueSettings = queueSettings.Value;
             _queueService = queueService;
             _orderService = orderService;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             Func<QueueItem, Task<string>> handler = async (queueItem) =>
             {
-                //todo add logging 
+                var log = $"Request recieved. Queue item Type: ${queueItem.EventType}, Message: ${queueItem.Message}";
+                _logger.LogInformation(log);
 
                 switch (queueItem.EventType)
                 {
@@ -55,6 +59,12 @@ namespace RequestProcessor.HostedServices
                     case QueueMessageType.GetOrder:
                         var getOrderModel = QueueItem.Deserialize<GetOrderDTO>(queueItem.Message);
                         var resultOrder = await _orderService.GetOrderByIdAsync(getOrderModel.OrderId);
+
+                        if (resultOrder == null)
+                        {
+                            return "Not found";
+                        }
+
                         return JsonSerializer.Serialize(resultOrder, _jsonSerializerOptions);
 
                     default:

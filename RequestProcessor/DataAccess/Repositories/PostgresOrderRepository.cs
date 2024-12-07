@@ -16,9 +16,16 @@ namespace RequestProcessor.DataAccess.Repositories
 
                 var query = @"SELECT * FROM get_orders(@ClientId, @DepartmentAddress)";
                 var parameters = new { ClientId = clientId, DepartmentAddress = departmentAddress };
-                var orders = await connection.QueryAsync<Order>(query, parameters);
+                var result = await connection.QueryAsync<Order>(query, parameters);
 
-                return orders.ToList();
+                var orders = result.ToList();
+
+                if (!orders.Any())
+                {
+                    return new List<Order>();
+                }
+
+                return orders;
             }
         }
     }

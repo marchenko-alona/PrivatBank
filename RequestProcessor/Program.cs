@@ -13,10 +13,6 @@ public class Program
     {
         var host = CreateHostBuilder(args).Build();
 
-        //var messageHandler = host.Services.GetRequiredService<MessageHandler>();
-        //await messageHandler.StartListening(CancellationToken.None);
-        //Console.WriteLine("Listening to RabbitMQ...");
-
         await host.RunAsync();
     }
 

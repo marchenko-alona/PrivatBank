@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using RequestProcessor.DataAccess.Models;
+using System.Data;
 
 namespace RequestProcessor.DataAccess.Repositories
 {
@@ -7,14 +8,30 @@ namespace RequestProcessor.DataAccess.Repositories
     {
         public SqlOrderRepository(IDbConnectionFactory dbConnectionFactory) : base(dbConnectionFactory) { }
 
-        public override async Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress)
+        public async override Task<List<Order>> GetOrdersByClientIdAsync(string clientId, string departmentAddress)
         {
-            using (var connection = dbConnectionFactory.GetConnection())
+            using (IDbConnection connection = dbConnectionFactory.GetConnection())
             {
                 connection.Open();
-                var query = @"EXEC get_orders @ClientId, @DepartmentAddress";
-                var parameters = new { ClientId = clientId, DepartmentAddress = departmentAddress };
-                return (await connection.QueryAsync<Order>(query, parameters)).ToList();
+
+                var parameters = new DynamicParameters();
+                parameters.Add(Constants.ClientIdParam, clientId);
+                parameters.Add(Constants.DepartmentAddressParam, departmentAddress);
+
+                var result = await connection.QueryAsync<Order>(
+                    Constants.GetOrdersProcedure,
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                var orders = result.ToList();
+
+                if (!orders.Any())
+                {
+                    return new List<Order>();
+                }
+
+                return orders;
             }
         }
     }

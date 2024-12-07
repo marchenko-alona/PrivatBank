@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-
-namespace RequestProcessor.DataAccess.Models
+﻿namespace RequestProcessor.DataAccess.Models
 {
     public class Order
     {
