@@ -53,29 +53,41 @@ namespace RequestProcessor.DataAccess.Repositories
                 parameters.Add(Constants.ClientIp, dbType: DbType.String, direction: ParameterDirection.Output, size: Constants.ClientIpSize);
                 parameters.Add(Constants.OrderId, orderId);
 
-                await connection.ExecuteAsync(
+                Order order = null;
+                try
+                {
+                    await connection.ExecuteAsync(
                         Constants.GetOrderByIdProcedure,
                         parameters,
                         commandType: CommandType.StoredProcedure
                     );
 
-                var value = parameters.Get<object>(Constants.ClientId);
+                    var value = parameters.Get<object>(Constants.ClientId);
 
-                if (value == null)
+                    if (value == null)
+                    {
+                        return null;
+                    }
+
+                    order = new Order
+                    {
+                        ClientId = parameters.Get<string>(Constants.ClientId),
+                        DepartmentAddress = parameters.Get<string>(Constants.DepartmentAddress),
+                        Amount = parameters.Get<decimal>(Constants.Amount),
+                        Currency = parameters.Get<string>(Constants.Currency),
+                        Status = (OrderStatus)parameters.Get<int>(Constants.Status),
+                        ClientIp = parameters.Get<string>(Constants.ClientIp),
+                        Id = orderId
+                    };
+                }
+                catch (Npgsql.PostgresException ex) when (ex.SqlState == "P0001")
                 {
                     return null;
                 }
-
-                var order = new Order
+                catch (Exception ex)
                 {
-                    ClientId = parameters.Get<string>(Constants.ClientId),
-                    DepartmentAddress = parameters.Get<string>(Constants.DepartmentAddress),
-                    Amount = parameters.Get<decimal>(Constants.Amount),
-                    Currency = parameters.Get<string>(Constants.Currency),
-                    Status = (OrderStatus)parameters.Get<int>(Constants.Status),
-                    ClientIp = parameters.Get<string>(Constants.ClientIp),
-                    Id = orderId
-                };
+                    throw;
+                }
 
                 return order;
             }
