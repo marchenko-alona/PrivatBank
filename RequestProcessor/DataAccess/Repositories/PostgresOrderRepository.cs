@@ -28,5 +28,21 @@ namespace RequestProcessor.DataAccess.Repositories
                 return orders;
             }
         }
+
+        public async override Task<Order?> GetOrderByIdAsync(int orderId)
+        {
+            try
+            {
+                return await base.GetOrderByIdAsync(orderId);
+            }
+            catch (Npgsql.PostgresException ex) when (ex.SqlState == "P0001")
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

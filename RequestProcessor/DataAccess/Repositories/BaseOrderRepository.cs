@@ -39,7 +39,7 @@ namespace RequestProcessor.DataAccess.Repositories
             }
         }
 
-        public async Task<Order?> GetOrderByIdAsync(int orderId)
+        public async virtual Task<Order?> GetOrderByIdAsync(int orderId)
         {
             using (IDbConnection connection = dbConnectionFactory.GetConnection())
             {
@@ -54,40 +54,30 @@ namespace RequestProcessor.DataAccess.Repositories
                 parameters.Add(Constants.OrderId, orderId);
 
                 Order order = null;
-                try
-                {
-                    await connection.ExecuteAsync(
-                        Constants.GetOrderByIdProcedure,
-                        parameters,
-                        commandType: CommandType.StoredProcedure
-                    );
 
-                    var value = parameters.Get<object>(Constants.ClientId);
+                await connection.ExecuteAsync(
+                    Constants.GetOrderByIdProcedure,
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
 
-                    if (value == null)
-                    {
-                        return null;
-                    }
+                var value = parameters.Get<object>(Constants.ClientId);
 
-                    order = new Order
-                    {
-                        ClientId = parameters.Get<string>(Constants.ClientId),
-                        DepartmentAddress = parameters.Get<string>(Constants.DepartmentAddress),
-                        Amount = parameters.Get<decimal>(Constants.Amount),
-                        Currency = parameters.Get<string>(Constants.Currency),
-                        Status = (OrderStatus)parameters.Get<int>(Constants.Status),
-                        ClientIp = parameters.Get<string>(Constants.ClientIp),
-                        Id = orderId
-                    };
-                }
-                catch (Npgsql.PostgresException ex) when (ex.SqlState == "P0001")
+                if (value == null)
                 {
                     return null;
                 }
-                catch (Exception ex)
+
+                order = new Order
                 {
-                    throw;
-                }
+                    ClientId = parameters.Get<string>(Constants.ClientId),
+                    DepartmentAddress = parameters.Get<string>(Constants.DepartmentAddress),
+                    Amount = parameters.Get<decimal>(Constants.Amount),
+                    Currency = parameters.Get<string>(Constants.Currency),
+                    Status = (OrderStatus)parameters.Get<int>(Constants.Status),
+                    ClientIp = parameters.Get<string>(Constants.ClientIp),
+                    Id = orderId
+                };
 
                 return order;
             }
